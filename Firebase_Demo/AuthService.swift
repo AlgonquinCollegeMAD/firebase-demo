@@ -7,6 +7,11 @@
 import Foundation
 import FirebaseAuth
 
+enum AuthError: Error {
+  case invalidCredentials
+  case couldNotRegister
+}
+
 @MainActor
 class AuthService: ObservableObject {
   @Published var user: User?
@@ -50,7 +55,7 @@ class AuthService: ObservableObject {
     }
   }
   
-  func logout() async -> Bool {
+  func logout() -> Bool {
     do {
       try Auth.auth().signOut()
       self.user = nil
