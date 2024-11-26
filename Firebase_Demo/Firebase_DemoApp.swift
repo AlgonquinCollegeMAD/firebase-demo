@@ -24,7 +24,7 @@ struct Firebase_DemoApp: App {
   var body: some Scene {
     WindowGroup {
       NavigationView {
-        ContentView()
+        AuthView()
       }
     }
   }
