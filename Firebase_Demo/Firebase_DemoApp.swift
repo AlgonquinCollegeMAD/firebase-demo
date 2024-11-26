@@ -18,14 +18,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 @main
 struct Firebase_DemoApp: App {
+  @StateObject private var authService = AuthService.shared
   // register app delegate for Firebase setup
   @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
   var body: some Scene {
     WindowGroup {
       NavigationView {
-        AuthView()
+        RootView()
       }
+      .environmentObject(authService)
     }
   }
 }

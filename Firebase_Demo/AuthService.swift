@@ -7,11 +7,6 @@
 import Foundation
 import FirebaseAuth
 
-enum AuthError: Error {
-  case invalidCredentials
-  case couldNotRegister
-}
-
 @MainActor
 class AuthService: ObservableObject {
   @Published var user: User?
@@ -29,18 +24,10 @@ class AuthService: ObservableObject {
     }
   }
   
-  // MARK: - Email & Password Authentication
-  
-  func register(email: String, password: String) async -> Bool {
-    do {
-      let result = try await Auth.auth().createUser(withEmail: email, password: password)
-      self.user = result.user
-      self.isSignedIn = true
-      return true
-    } catch {
-      self.authError = error.localizedDescription
-      return false
-    }
+  func register(email: String, password: String) async throws {
+    let result = try await Auth.auth().createUser(withEmail: email, password: password)
+    self.user = result.user
+    self.isSignedIn = true
   }
   
   func login(email: String, password: String) async -> Bool {
@@ -55,15 +42,9 @@ class AuthService: ObservableObject {
     }
   }
   
-  func logout() -> Bool {
-    do {
-      try Auth.auth().signOut()
-      self.user = nil
-      self.isSignedIn = false
-      return true
-    } catch {
-      self.authError = error.localizedDescription
-      return false
-    }
+  func logout() throws {
+    try Auth.auth().signOut()
+    self.user = nil
+    self.isSignedIn = false
   }
 }
