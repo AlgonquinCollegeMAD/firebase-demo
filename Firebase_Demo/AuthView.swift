@@ -14,32 +14,44 @@ public struct AuthView: View {
   @State private var password = ""
   @State private var registrationError: Error?
   @State private var showRegistrationErrorMessage = false
+    @State private var isLoading = false
   
   public var body: some View {
-    VStack {
-      TextField("Email", text: $email)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-      SecureField("Password", text: $password)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-      Button("Login") {
-        Task {
-          let success = await authService.login(email: email, password: password)
-          if !success {
-            print(authService.authError ?? "Unknown error")
+      VStack {
+          if isLoading {
+              ProgressView()
+          } else {
+              TextField("Email", text: $email)
+                  .textFieldStyle(RoundedBorderTextFieldStyle())
+              SecureField("Password", text: $password)
+                  .textFieldStyle(RoundedBorderTextFieldStyle())
+              
+              Button("Login") {
+                  isLoading = true
+                  Task {
+                      let success = await authService.login(email: email, password: password)
+                      if !success {
+                          print(authService.authError ?? "Unknown error")
+                      }
+                  }
+              }
+              .disabled(isLoading)
+              
+              Button("Register") {
+                  isLoading = true
+                  Task {
+                      do {
+                          try await authService.register(email: email, password: password)
+                      }
+                      catch {
+                          registrationError = error
+                      }
+                      isLoading = false
+                  }
+              }
+              .disabled(isLoading)
           }
-        }
       }
-      Button("Register") {
-        Task {
-          do {
-            try await authService.register(email: email, password: password)
-          }
-          catch {
-            registrationError = error
-          }
-        }
-      }
-    }
     .onChange(of: registrationError?.localizedDescription) { old, new in
       showRegistrationErrorMessage = new != nil
     }
