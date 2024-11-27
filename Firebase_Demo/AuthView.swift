@@ -5,49 +5,86 @@
 //  Created by Vladimir Cezar on 2024.11.26.
 //
 
-import SwiftUI
 import Firebase
+import SwiftUI
+
+//
+//  AuthView.swift
+//  Firebase_Demo
+//
+//  Created by Vladimir Cezar on 2024.11.26.
+//
+
+import Firebase
+import SwiftUI
 
 public struct AuthView: View {
-  @EnvironmentObject private var authService: AuthService
-  @State private var email = ""
-  @State private var password = ""
-  @State private var registrationError: Error?
-  @State private var showRegistrationErrorMessage = false
-  
-  public var body: some View {
-    VStack {
-      TextField("Email", text: $email)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-      SecureField("Password", text: $password)
-        .textFieldStyle(RoundedBorderTextFieldStyle())
-      Button("Login") {
-        Task {
-          let success = await authService.login(email: email, password: password)
-          if !success {
-            print(authService.authError ?? "Unknown error")
-          }
+    @EnvironmentObject private var authService: AuthService
+    @State private var email = ""
+    @State private var password = ""
+    @State private var registrationError: Error?
+    @State private var showRegistrationErrorMessage = false
+    @State private var isLoading = false
+    
+    public var body: some View {
+        VStack(spacing: 16) {
+            TextField("Email", text: $email)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
+                .accessibilityLabel("Email Address")
+            
+            SecureField("Password", text: $password)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .accessibilityLabel("Password")
+            
+            if isLoading {
+                ProgressView()
+            } else {
+                HStack {
+                    Button("Login") {
+                        login()
+                    }
+                    .disabled(email.isEmpty || password.isEmpty || isLoading)
+                    
+                    Button("Register") {
+                        register()
+                    }
+                    .disabled(email.isEmpty || password.isEmpty || isLoading)
+                }
+            }
         }
-      }
-      Button("Register") {
-        Task {
-          do {
-            try await authService.register(email: email, password: password)
-          }
-          catch {
-            registrationError = error
-          }
+        .onChange(of: registrationError?.localizedDescription) { new in
+            showRegistrationErrorMessage = new != nil
         }
-      }
+        .alert("Failed Registration", isPresented: $showRegistrationErrorMessage) {
+            Button("OK") {}
+        } message: {
+            Text(registrationError?.localizedDescription ?? "Unknown error")
+        }
+        .padding()
     }
-    .onChange(of: registrationError?.localizedDescription) { old, new in
-      showRegistrationErrorMessage = new != nil
+    
+    private func login() {
+        isLoading = true
+        Task {
+            let success = await authService.login(email: email, password: password)
+            isLoading = false
+            if !success {
+                print(authService.authError ?? "Unknown error")
+            }
+        }
     }
-    .alert("Failed registration", isPresented: $showRegistrationErrorMessage, actions: {
-      Button("OK") {}
-    }, message: {
-      Text(registrationError?.localizedDescription ?? "Unknown error")
-    })
-    .padding()
-  }
+    
+    private func register() {
+        isLoading = true
+        Task {
+            do {
+                try await authService.register(email: email, password: password)
+            } catch {
+                registrationError = error
+            }
+            isLoading = false
+        }
+    }
 }
