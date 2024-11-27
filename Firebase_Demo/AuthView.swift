@@ -13,7 +13,7 @@ public struct AuthView: View {
   @State private var email = ""
   @State private var password = ""
   @State private var registrationError: Error?
-  @State private var showRegistrationErrorMessage = false
+  //@State private var showRegistrationErrorMessage = false
   
   public var body: some View {
     VStack {
@@ -41,10 +41,13 @@ public struct AuthView: View {
         }
       }
     }
-    .onChange(of: registrationError?.localizedDescription) { old, new in
-      showRegistrationErrorMessage = new != nil
-    }
-    .alert("Failed registration", isPresented: $showRegistrationErrorMessage, actions: {
+    //.onChange(of: registrationError?.localizedDescription) { old, new in
+    //  showRegistrationErrorMessage = new != nil
+    //}
+    .alert("Failed registration", isPresented: Binding(
+        get: { registrationError != nil },
+        set: { _ in registrationError = nil }
+      ), actions: {
       Button("OK") {}
     }, message: {
       Text(registrationError?.localizedDescription ?? "Unknown error")
