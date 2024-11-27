@@ -15,7 +15,7 @@ public struct UserView: View {
     VStack {
       Text("Welcome, \(user?.email ?? "User")")
       Button("Logout") {
-        try! Auth.auth().signOut()
+        try? Auth.auth().signOut()
       }      
     }
   }
