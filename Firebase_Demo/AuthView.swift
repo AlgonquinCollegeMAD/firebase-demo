@@ -19,6 +19,7 @@ public struct AuthView: View {
     VStack {
       TextField("Email", text: $email)
         .textFieldStyle(RoundedBorderTextFieldStyle())
+        .textInputAutocapitalization(.never)
       SecureField("Password", text: $password)
         .textFieldStyle(RoundedBorderTextFieldStyle())
       Button("Login") {
